@@ -14,18 +14,23 @@ public class Message {
     private String messageID;
     private int messageCount;
     private String recipientCell;
+    private String senderCell;
     private String message;
     private String messageHash;
     private String messageStatus;
 
-    public Message(String recipientCell, String message, int messageCount) {
-        this.recipientCell = recipientCell;
-        this.message = message;
-        this.messageCount = messageCount;
-        this.messageID = "";
-        this.messageHash = "";
-        this.messageStatus = "Pending";
-    }
+   public Message(String senderCell, String recipientCell,
+        String message, int messageCount) {
+
+    this.senderCell = senderCell;
+    this.recipientCell = recipientCell;
+    this.message = message;
+    this.messageCount = messageCount;
+    this.messageID = "";
+    this.messageHash = "";
+    this.messageStatus = "Pending";
+}
+    
 
     // Checks that the message ID is no more than 10 characters
     public boolean checkMessageID() {
@@ -46,8 +51,8 @@ public class Message {
         return false;
     }
 
-    return recipientCell.matches("\\+27[0-9]{9}")
-            || recipientCell.matches("0[0-9]{9}");
+    return recipientCell.matches("\\+27[0-9]{9}");
+           
 }
 
     // Returns the recipient validation message
@@ -80,22 +85,39 @@ public class Message {
     }
 
     // Creates the message hash
-    public String createMessageHash() {
-        if (messageID == null || messageID.length() < 2
-                || message == null || message.trim().isEmpty()) {
-            return "";
-        }
-
-        String[] words = message.trim().split("\\s+");
-        String firstWord = words[0];
-        String lastWord = words[words.length - 1];
-
-        messageHash = (messageID.substring(0, 2) + ":"
-                + messageCount + ":"
-                + firstWord + lastWord).toUpperCase();
-
-        return messageHash;
+    
+      
+public String createMessageHash() {
+    if (messageID == null || messageID.length() < 2
+            || message == null || message.trim().isEmpty()) {
+        return "";
     }
+
+    String[] words = message.trim().split("\\s+");
+
+    String firstWord = words[0].replaceAll("[^a-zA-Z0-9]", "");
+    String lastWord = words[words.length - 1]
+            .replaceAll("[^a-zA-Z0-9]", "");
+
+    if (firstWord.isEmpty() || lastWord.isEmpty()) {
+        return "";
+    }
+
+    String firstPart = firstWord.toUpperCase();
+    String lastPart = lastWord.toUpperCase();
+
+    if (firstPart.charAt(firstPart.length() - 1)
+            == lastPart.charAt(0)) {
+        lastPart = lastPart.substring(1);
+    }
+
+    messageHash = (messageID.substring(0, 2) + ":"
+            + messageCount + ":"
+            + firstPart + lastPart).toUpperCase();
+
+    return messageHash;
+}
+
 
     // Allows the user to choose an action for the message
     public String SentMessage(int choice) {
@@ -143,6 +165,9 @@ public class Message {
     public String getRecipientCell() {
         return recipientCell;
     }
+    public String getSenderCell() {
+    return senderCell;
+    }
 
     // Returns the message text
     public String getMessage() {
@@ -169,6 +194,7 @@ public String storeMessage() {
             + "  \"messageID\": \"" + escapeJson(messageID) + "\",\n"
             + "  \"messageHash\": \"" + escapeJson(messageHash) + "\",\n"
             + "  \"recipientCell\": \"" + escapeJson(recipientCell) + "\",\n"
+            + "  \"senderCell\": \"" + escapeJson(senderCell) + "\",\n"
             + "  \"message\": \"" + escapeJson(message) + "\",\n"
             + "  \"messageCount\": " + messageCount + ",\n"
             + "  \"messageStatus\": \"" + escapeJson(messageStatus) + "\"\n"
@@ -224,6 +250,9 @@ public String storeMessage() {
                 .replace("\r", "\\r")
                 .replace("\t", "\\t");
     }
+    public void setMessageID(String messageID) {
+    this.messageID = messageID;
+}
 }
 
     

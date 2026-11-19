@@ -1,7 +1,3 @@
-/*
- * Click nbfs://nbhost/SystemFileSystem/Templates/Licenses/license-default.txt to change this license
- */
-
 
 package com.mycompany.myfirstchatapp;
 
@@ -13,7 +9,7 @@ public class MyFirstChatApp {
     public static void main(String[] args) {
 
         Scanner input = new Scanner(System.in);
-        ArrayList<Message> messages = new ArrayList<>();
+        MessageManager manager = new MessageManager();
 
         System.out.println("=== Chat App Registration ===");
 
@@ -33,11 +29,8 @@ public class MyFirstChatApp {
         String cellPhoneNumber = input.nextLine();
 
         Login user = new Login(
-                username,
-                password,
-                cellPhoneNumber,
-                firstName,
-                lastName
+                username, password, cellPhoneNumber,
+                firstName, lastName
         );
 
         System.out.println();
@@ -66,11 +59,13 @@ public class MyFirstChatApp {
 
             int choice = 0;
 
-            while (choice != 3) {
+            while (choice != 4) {
+
                 System.out.println();
                 System.out.println("1. Send Messages");
                 System.out.println("2. Show recently sent messages");
-                System.out.println("3. Quit");
+                System.out.println("3. Stored Messages");
+                System.out.println("4. Quit");
                 System.out.print("Enter your choice: ");
 
                 choice = input.nextInt();
@@ -92,7 +87,11 @@ public class MyFirstChatApp {
                             String messageText = input.nextLine();
 
                             Message newMessage = new Message(
-                                    recipient, messageText, i + 1);
+                                    user.getCellPhoneNumber(),
+                                    recipient,
+                                    messageText,
+                                    i
+                            );
 
                             newMessage.createMessageID();
 
@@ -121,18 +120,28 @@ public class MyFirstChatApp {
                             int messageChoice = input.nextInt();
                             input.nextLine();
 
-                            System.out.println(
-                                    newMessage.SentMessage(messageChoice));
+                            if (messageChoice < 1 || messageChoice > 3) {
+                                System.out.println("Invalid choice.");
+                                i--;
+                                continue;
+                            }
 
-                            messages.add(newMessage);
+                            String messageResult =
+                                    newMessage.SentMessage(messageChoice);
 
-                            System.out.println(newMessage.printMessages());
-                            System.out.println(
-                                    "Total messages sent: "
-                                    + newMessage.returnTotalMessagess());
+                            System.out.println(messageResult);
+
+                             manager.addMessage(newMessage);
+
+                      if (messageChoice == 1) {
+                          System.out.println(newMessage.printMessages());
+
+                        System.out.println(
+                           "Total messages sent: "
+                        + newMessage.returnTotalMessagess());
+}
                         }
 
-                        // Prevent entering more than the startup quantity
                         numberOfMessages = 0;
                         break;
 
@@ -141,6 +150,109 @@ public class MyFirstChatApp {
                         break;
 
                     case 3:
+
+                        int storedChoice = 0;
+
+                        while (storedChoice != 7) {
+
+                            System.out.println("\n=== Stored Messages ===");
+                            System.out.println("1. Display sender and recipient");
+                            System.out.println("2. Display longest message");
+                            System.out.println("3. Search by message ID");
+                            System.out.println("4. Search by recipient");
+                            System.out.println("5. Delete message by hash");
+                            System.out.println("6. Display full report");
+                            System.out.println("7. Back to main menu");
+                            System.out.print("Enter your choice: ");
+
+                            storedChoice = input.nextInt();
+                            input.nextLine();
+
+                            switch (storedChoice) {
+
+                                case 1:
+                                    System.out.println(
+                                            manager.displaySenderRecipient());
+                                    break;
+
+                                case 2:
+                                    System.out.println(
+                                            "Longest stored message:");
+                                    System.out.println(
+                                            manager.getLongestStoredMessage());
+                                    break;
+
+                                case 3:
+                                    System.out.print("Enter the message ID: ");
+                                    String searchID = input.nextLine();
+
+                                    String foundMessage =
+                                            manager.searchByMessageID(searchID);
+
+                                    if (foundMessage == null) {
+                                        System.out.println(
+                                                "Message ID not found.");
+                                    } else {
+                                        System.out.println(
+                                                "Message found: " + foundMessage);
+                                    }
+                                    break;
+
+                                case 4:
+                                    System.out.print(
+                                            "Enter the recipient cellphone number: ");
+                                    String searchRecipient = input.nextLine();
+
+                                    ArrayList<Message> results =
+                                            manager.searchByRecipient(
+                                                    searchRecipient);
+
+                                    if (results.isEmpty()) {
+                                        System.out.println(
+                                                "No messages found for this recipient.");
+                                    } else {
+                                        for (Message msg : results) {
+                                            System.out.println(
+                                                    "Message: " + msg.getMessage());
+                                            System.out.println(
+                                                    "Status: " + msg.getMessageStatus());
+                                        }
+                                    }
+                                    break;
+
+                                case 5:
+                                    System.out.print(
+                                            "Enter the message hash to delete: ");
+                                    String searchHash = input.nextLine();
+
+                                    if (manager.deleteMessageByHash(searchHash)) {
+                                        System.out.println(
+                                                "Message successfully deleted.");
+                                    } else {
+                                        System.out.println(
+                                                "Message hash not found.");
+                                    }
+                                    break;
+
+                                case 6:
+                                    System.out.println(
+                                            "========== MESSAGE REPORT ==========");
+                                    System.out.println(
+                                            manager.displaySentMessagesReport());
+                                    break;
+
+                                case 7:
+                                    System.out.println(
+                                            "Returning to main menu.");
+                                    break;
+
+                                default:
+                                    System.out.println("Invalid choice.");
+                            }
+                        }
+                        break;
+
+                    case 4:
                         System.out.println("Goodbye!");
                         break;
 
